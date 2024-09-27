@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>赵云长坂坡</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="game-container">
+        <div id="start-screen" class="screen">
+            <h1>赵云长坂坡</h1>
+            <button id="start-game">开始游戏</button>
+            <button id="tutorial" disabled>新手教程</button>
+        </div>
+        <div id="game-screen" class="screen hidden">
+            <div id="game-area">
+                <div id="game-board"></div>
+            </div>
+            <div id="info-area">
+                <div id="info-panel">
+                    <h2>赵云状态</h2>
+                    <div id="player-stats">
+                        <p>等级: <span id="level"></span></p>
+                        <p>生命值: <span id="health"></span></p>
+                        <p>攻击力: <span id="attack"></span></p>
+                        <p>防御力: <span id="defense"></span></p>
+                        <p>经验值: <span id="exp"></span></p>
+                        <p>当前关卡: <span id="current-level"></span></p>
+                    </div>
+                </div>
+                <div id="action-buttons">
+                    <button id="attack-btn">天翔之龙</button>
+                    <button id="heal-btn">破云之龙</button>
+                    <button id="boost-btn">惊雷之龙</button>
+                </div>
+            </div>
+        </div>
+        <div id="end-screen" class="screen hidden">
+            <h2 id="end-message"></h2>
+            <button id="restart-game">重新开始</button>
+        </div>
+    </div>
+    <script src="character.js"></script>
+    <script src="item.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>

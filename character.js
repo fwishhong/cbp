@@ -1,12 +1,12 @@
 class Character {
-    constructor(type, health, attack, defense, icon) {
+    constructor(type, health, attack, defense, iconPath) {
         this.type = type;
         this.health = health;
         this.maxHealth = health;
         this.attack = attack;
         this.defense = defense;
         this.maxDefense = defense;
-        this.icon = icon;
+        this.iconPath = iconPath;
         this.exp = 0;
         this.level = 1;
         this.critRate = 0.1; // 10% 暴击率
@@ -73,7 +73,7 @@ class Character {
 
 class ZhaoYun extends Character {
     constructor() {
-        super('赵云', 100, 20, 10, '👱');
+        super('赵云', 100, 20, 10, 'images/zhaoyun.png');
     }
 }
 
@@ -82,7 +82,7 @@ class Infantry extends Character {
         const health = Character.getRandomInt(40, 60) + level * 5;
         const attack = Character.getRandomInt(10, 15) + level;
         const defense = Character.getRandomInt(5, 8) + Math.floor(level / 2);
-        super('步兵', health, attack, defense, '👤');
+        super('步兵', health, attack, defense, 'images/infantry.png');
     }
 }
 
@@ -91,7 +91,7 @@ class Archer extends Character {
         const health = Character.getRandomInt(30, 50) + level * 4;
         const attack = Character.getRandomInt(12, 18) + level;
         const defense = Character.getRandomInt(3, 6) + Math.floor(level / 2);
-        super('弓箭手', health, attack, defense, '👤');
+        super('弓箭手', health, attack, defense, 'images/archer.png');
     }
 }
 
@@ -100,6 +100,6 @@ class Boss extends Character {
         const health = Character.getRandomInt(80, 100) + level * 10;
         const attack = Character.getRandomInt(18, 25) + level * 2;
         const defense = Character.getRandomInt(10, 15) + level;
-        super('武将', health, attack, defense, '👤');
+        super('武将', health, attack, defense, 'images/boss.png');
     }
 }

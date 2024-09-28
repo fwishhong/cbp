@@ -1,5 +1,15 @@
+:root {
+    --main-bg-color: #f0e6d2;
+    --board-bg-color: #d2b48c;
+    --cell-bg-color: #f5deb3;
+    --button-bg-color: #8b4513;
+    --button-hover-color: #a0522d;
+    --text-color: #4a3728;
+    --button-text-color: #ffffff;
+}
+
 body {
-    font-family: Arial, sans-serif;
+    font-family: 'Ma Shan Zheng', cursive, Arial, sans-serif;
     margin: 0;
     padding: 0;
     display: flex;
@@ -7,7 +17,8 @@ body {
     align-items: center;
     justify-content: center;
     min-height: 100vh;
-    background-color: #f0f0f0;
+    background-color: var(--main-bg-color);
+    color: var(--text-color);
 }
 
 #game-container {
@@ -16,11 +27,11 @@ body {
     background-color: rgba(255, 255, 255, 0.9);
     padding: 20px;
     border-radius: 10px;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 0 20px rgba(139, 69, 19, 0.3);
     width: 95vw;
     height: 95vh;
     max-width: 800px;
-    max-height: 600px;
+    max-height: 800px;
 }
 
 .screen {
@@ -52,47 +63,61 @@ body {
 
 #game-board {
     display: grid;
-    gap: 2px;
-    background-color: #ccc;
-    padding: 2px;
+    gap: 4px;
+    background-color: var(--board-bg-color);
+    padding: 4px;
     border-radius: 5px;
     width: 100%;
     height: 100%;
-    max-width: 400px;
-    max-height: 400px;
+    aspect-ratio: 1 / 1;
+    max-width: 600px;
+    max-height: 600px;
+    margin: auto;
 }
 
 .cell {
-    background-color: white;
-    border-radius: 3px;
+    background-color: var(--cell-bg-color);
+    border-radius: 5px;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
     font-size: 12px;
     padding: 2px;
     cursor: pointer;
-    border: 1px solid #8b4513;
+    border: 1px solid var(--button-bg-color);
     overflow: hidden;
     transition: all 0.3s ease;
+    position: relative;
 }
 
 .cell:hover {
     transform: scale(1.05);
+    box-shadow: 0 0 10px rgba(139, 69, 19, 0.5);
 }
 
 .cell-icon {
-    font-size: 20px;
-    margin-bottom: 2px;
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* 改为 cover，确保图片填满整个区域 */
+    z-index: 1;
+    filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.3));
 }
 
+/* 移除 .cell-icon.item-icon 的特殊样式，因为现在所有图标都使用相同的样式 */
+
 .cell-stats {
+    position: absolute;
+    bottom: 2px;
+    left: 2px;
+    right: 2px;
     display: flex;
-    flex-direction: column;
-    align-items: center;
+    justify-content: space-between;
     font-size: 10px;
-    line-height: 1;
-    text-align: center;
+    background-color: rgba(255, 255, 255, 0.7);
+    padding: 2px;
+    border-radius: 3px;
+    z-index: 2;
 }
 
 #info-area {
@@ -100,14 +125,16 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
+    margin-top: 20px;
 }
 
 #info-panel {
-    background-color: white;
-    padding: 10px;
+    background-color: var(--cell-bg-color);
+    padding: 15px;
     border-radius: 5px;
     width: 100%;
-    margin-bottom: 10px;
+    margin-bottom: 15px;
+    box-shadow: 0 0 10px rgba(139, 69, 19, 0.2);
 }
 
 #skill-buttons {
@@ -118,20 +145,31 @@ body {
 
 button {
     font-family: 'Ma Shan Zheng', cursive, Arial, sans-serif;
-    font-size: 16px;
-    padding: 10px;
+    font-size: 18px;
+    padding: 12px 20px;
     margin: 5px;
     cursor: pointer;
-    background-color: #d4a76a;
-    color: #5a3d2b;
+    background-color: var(--button-bg-color);
+    color: var(--button-text-color); /* 使用定义的文字颜色 */
     border: none;
     border-radius: 5px;
     transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    line-height: 1.2;
+    min-height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    white-space: normal; /* 允许文字换行 */
+    word-break: break-word; /* 长单词可以换行 */
+    color: #ffffff !important; /* 强制使用白色文字 */
 }
 
 button:hover {
-    background-color: #c19456;
+    background-color: var(--button-hover-color);
     transform: translateY(-2px);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
 }
 
 button:disabled {
@@ -139,26 +177,30 @@ button:disabled {
     color: #666666;
     cursor: not-allowed;
     transform: none;
+    box-shadow: none;
 }
 
 h1, h2 {
-    color: #8b4513;
+    color: var(--button-bg-color);
     text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .info-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 5px;
+    gap: 10px;
+    font-size: 16px;
 }
 
-@media (max-width: 480px) {
+@media (max-width: 768px) {
     #game-container {
         padding: 10px;
+        height: auto;
     }
 
-    .cell-icon {
-        font-size: 16px;
+    #game-board {
+        max-width: 90vw;
+        max-height: 90vw;
     }
 
     .cell-stats {
@@ -166,7 +208,48 @@ h1, h2 {
     }
 
     button {
+        font-size: 16px;
+        padding: 10px 15px;
+    }
+
+    .info-grid {
         font-size: 14px;
-        padding: 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    #game-container {
+        width: 100vw;
+        height: 100vh;
+        border-radius: 0;
+    }
+
+    #game-board {
+        max-width: 95vw;
+        max-height: 95vw;
+    }
+
+    button {
+        font-size: 14px;
+        padding: 8px 12px;
+        min-height: 40px; /* 调整小屏幕下的最小高度 */
+    }
+
+    .info-grid {
+        font-size: 12px;
+    }
+
+    #skill-buttons {
+        flex-direction: row; /* 保持水平排列 */
+        justify-content: space-around; /* 均匀分布 */
+        flex-wrap: wrap; /* 允许换行 */
+    }
+
+    #skill-buttons button {
+        width: 30%; /* 调整宽度 */
+        margin-bottom: 10px;
+        font-size: 12px; /* 更小的字体 */
+        padding: 6px; /* 减小内边距 */
+        max-width: 150px;
     }
 }

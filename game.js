@@ -10,6 +10,8 @@ class Game {
         this.infoPanel = document.getElementById('info-panel');
 
         document.getElementById('start-game').addEventListener('click', () => this.startGame());
+        document.getElementById('tutorial').addEventListener('click', () => this.showTutorial());
+        document.getElementById('close-tutorial').addEventListener('click', () => this.hideTutorial());
 
         this.playerLevel = 1;
 
@@ -23,7 +25,7 @@ class Game {
         document.getElementById('heal-btn').addEventListener('click', () => this.useSkill('heal'));
         document.getElementById('boost-btn').addEventListener('click', () => this.useSkill('boost'));
 
-        this.sweepAttackMultiplier = 0.6; // 初始天翔之龙倍率
+        this.sweepAttackMultiplier = 0.6; // 初始天翔龙倍率
     }
 
     startGame() {
@@ -33,6 +35,16 @@ class Game {
         this.renderGrid();
         this.updateInfoPanel();
         this.updateSkillButtons();
+    }
+
+    showTutorial() {
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('tutorial-screen').classList.remove('hidden');
+    }
+
+    hideTutorial() {
+        document.getElementById('tutorial-screen').classList.add('hidden');
+        document.getElementById('start-screen').classList.remove('hidden');
     }
 
     initLevel() {
@@ -173,29 +185,30 @@ class Game {
                 cell.style.height = `${cellSize}px`;
                 const content = this.grid[y][x];
                 
-                if (content instanceof ZhaoYun) {
-                    cell.style.backgroundColor = '#1E90FF';
-                } else if (content instanceof Character) {
-                    cell.style.backgroundColor = 'lightcoral';
-                } else if (content instanceof Item && !(content instanceof Exit)) {
-                    cell.style.backgroundColor = 'lightgreen';
-                } else if (content instanceof Exit) {
-                    cell.style.backgroundColor = 'gold';
+                if (content instanceof Character || content instanceof Item) {
+                    const img = document.createElement('img');
+                    img.src = content.iconPath;
+                    img.classList.add('cell-icon');
+                    cell.appendChild(img);
+
+                    if (content instanceof Character) {
+                        const stats = document.createElement('div');
+                        stats.classList.add('cell-stats');
+                        stats.innerHTML = `
+                            <span>❤️${content.health}</span>
+                            <span>⚔️${content.attack}</span>
+                            <span>🛡️${content.defense}</span>
+                        `;
+                        cell.appendChild(stats);
+                    }
+                    
+                    if (content instanceof Exit) {
+                        cell.style.backgroundColor = 'gold';
+                    } else if (content instanceof Item) {
+                        cell.style.backgroundColor = 'lightgreen';
+                    }
                 } else {
                     cell.style.backgroundColor = 'white';
-                }
-
-                if (content) {
-                    cell.innerHTML = `
-                        <div class="cell-icon">${content.icon}</div>
-                        ${content instanceof Character ? `
-                            <div class="cell-stats">
-                                <span>❤️${content.health}</span>
-                                <span>⚔️${content.attack}</span>
-                                <span>🛡️${content.defense}</span>
-                            </div>
-                        ` : ''}
-                    `;
                 }
 
                 cell.addEventListener('click', () => this.handleCellClick(x, y));
@@ -416,9 +429,9 @@ class Game {
         const healBtn = document.getElementById('heal-btn');
         const boostBtn = document.getElementById('boost-btn');
 
-        attackBtn.innerHTML = '天翔<br>之龙';
-        healBtn.innerHTML = '破云<br>之龙';
-        boostBtn.innerHTML = '惊雷<br>之龙';
+        attackBtn.textContent = '天翔之龙';
+        healBtn.textContent = '破云之龙';
+        boostBtn.textContent = '惊雷之龙';
 
         attackBtn.disabled = this.skillsUsed.attack;
         healBtn.disabled = this.skillsUsed.heal;

@@ -1,7 +1,7 @@
 class Item {
-    constructor(type, icon, value) {
+    constructor(type, iconPath, value) {
         this.type = type;
-        this.icon = icon;
+        this.iconPath = iconPath;
         this.value = value;
     }
 
@@ -23,24 +23,24 @@ class Item {
 
 class HealthPotion extends Item {
     constructor() {
-        super('health', '❤️', 30);
+        super('health', 'images/health_potion.png', 30);
     }
 }
 
 class AttackBoost extends Item {
     constructor() {
-        super('attack', '🔪', 5);
+        super('attack', 'images/attack_boost.png', 5);
     }
 }
 
 class DefenseBoost extends Item {
     constructor() {
-        super('defense', '🛡️', 5);
+        super('defense', 'images/defense_boost.png', 5);
     }
 }
 
 class Exit extends Item {
     constructor() {
-        super('exit', '🚪', 0);
+        super('exit', 'images/exit.png', 0);
     }
 }

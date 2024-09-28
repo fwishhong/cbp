@@ -2,7 +2,8 @@ class Game {
     constructor() {
         this.player = new ZhaoYun();
         this.level = 1;
-        this.gridSize = 3;
+        this.maxGridSize = 5; // 最大格子数限制
+        this.gridSize = 3; // 初始格子数为3x3
         this.grid = [];
         this.gameOver = false;
 
@@ -27,6 +28,8 @@ class Game {
 
         this.sweepAttackMultiplier = 0.6; // 初始天翔龙倍率
         this.jingLeiLongActive = false;
+
+        this.createBattleInfoPanel();
     }
 
     startGame() {
@@ -304,16 +307,13 @@ class Game {
         if ((dx === 1 && dy === 0) || (dx === 0 && dy === 1)) {
             if (clickedContent instanceof Character && !(clickedContent instanceof ZhaoYun)) {
                 const battleResult = this.battle(this.player, clickedContent);
-                const resultDiv = document.createElement('div');
-                resultDiv.innerHTML = battleResult;
-                alert(resultDiv.innerText);
                 if (clickedContent.health <= 0) {
                     this.grid[y][x] = this.player;
                     this.grid[playerPos.y][playerPos.x] = this.generateEnemy();
                 }
             } else if (clickedContent instanceof Item && !(clickedContent instanceof Exit)) {
                 clickedContent.apply(this.player);
-                alert(`赵云使用了${clickedContent.type === 'health' ? '生命药水' : clickedContent.type === 'attack' ? '攻击增强' : '防御增强'}！`);
+                this.showBattleInfo(`赵云使用了${clickedContent.type === 'health' ? '生命药水' : clickedContent.type === 'attack' ? '攻击增强' : '防御增强'}！`);
                 this.grid[y][x] = this.player;
                 this.grid[playerPos.y][playerPos.x] = this.generateEnemy();
             } else if (clickedContent instanceof Exit) {
@@ -331,8 +331,18 @@ class Game {
     }
 
     battle(attacker, defender) {
-        const damage = attacker.attack;  // 直接使用攻击力，而不是调用 attack 方法
+        const attackerPos = this.findCharacterPosition(attacker);
+        const defenderPos = this.findCharacterPosition(defender);
+
+        this.addAttackAnimation(attackerPos.x, attackerPos.y);
+        
+        const damage = attacker.attack;
         const actualDamage = defender.takeDamage(damage);
+        
+        if (actualDamage > 0) {
+            this.addHurtAnimation(defenderPos.x, defenderPos.y);
+        }
+
         let result = '';
 
         if (actualDamage === 0) {
@@ -351,7 +361,10 @@ class Game {
                 this.gameOver = true;
                 result += "<br>游戏结束！";
             } else {
-                const expGained = 10;
+                let expGained = 10;
+                if (defender instanceof Boss) {
+                    expGained = 30; // Boss给予30点经验值
+                }
                 this.player.gainExp(expGained);
                 result += `<br>赵云获得了${expGained}点经验值！`;
             }
@@ -375,6 +388,7 @@ class Game {
             }
         }
         
+        this.showBattleInfo(result);
         return result;
     }
 
@@ -391,7 +405,13 @@ class Game {
 
     nextLevel() {
         this.level++;
-        this.gridSize++;
+        if (this.level === 2) {
+            this.gridSize = 4; // 第二关变为4x4
+        } else if (this.level >= 4) {
+            this.gridSize = this.maxGridSize; // 第四关及以后保持5x5
+        }
+        // 第三关保持4x4，不需要特别设置
+
         this.playerLevel = Math.floor((this.level + 1) / 2);
         this.skillsUsed = {
             attack: false,
@@ -401,8 +421,8 @@ class Game {
         
         // 移除惊雷之龙效果
         if (this.jingLeiLongActive) {
-            this.player.attack -= 10;
-            this.player.defense -= 20;
+            this.player.attack = Math.max(0, this.player.attack - 10);
+            this.player.defense = Math.max(0, this.player.defense - 20);
             this.jingLeiLongActive = false;
         }
         
@@ -414,14 +434,14 @@ class Game {
 
     checkGameOver() {
         if (this.gameOver) {
-            alert("游戏结束！");
+            this.showBattleInfo("游戏结束！");
             location.reload(); // 重新加载页面以重启游戏
         }
     }
 
     useSkill(skillType) {
         if (this.skillsUsed[skillType]) {
-            alert('这个技能在本关卡已经使用过了！');
+            this.showBattleInfo('这个技能在本关卡已经使用过了！');
             return;
         }
 
@@ -440,7 +460,7 @@ class Game {
 
         this.skillsUsed[skillType] = true;
         this.updateSkillButtons();
-        alert(message);
+        this.showBattleInfo(message);
         this.renderGrid();
         this.updateInfoPanel();
         this.checkGameOver();
@@ -478,8 +498,8 @@ class Game {
 
     jingLeiLong() {
         if (this.jingLeiLongActive) {
-            this.player.attack -= 10;
-            this.player.defense -= 20;
+            this.player.attack = Math.max(0, this.player.attack - 10);
+            this.player.defense = Math.max(0, this.player.defense - 20);
         }
         this.player.attack += 10;
         this.player.defense += 20;
@@ -499,6 +519,68 @@ class Game {
         attackBtn.disabled = this.skillsUsed.attack;
         healBtn.disabled = this.skillsUsed.heal;
         boostBtn.disabled = this.skillsUsed.boost;
+    }
+
+    // 添加攻击动画
+    addAttackAnimation(x, y) {
+        const cell = this.getCellElement(x, y);
+        cell.classList.add('attack-animation');
+        setTimeout(() => cell.classList.remove('attack-animation'), 300);
+    }
+
+    // 添加技能释放粒子效果
+    addSkillParticles(x, y) {
+        const cell = this.getCellElement(x, y);
+        for (let i = 0; i < 20; i++) {
+            const particle = document.createElement('div');
+            particle.classList.add('particle');
+            particle.style.setProperty('--x', `${(Math.random() - 0.5) * 100}px`);
+            particle.style.setProperty('--y', `${(Math.random() - 0.5) * 100}px`);
+            cell.appendChild(particle);
+            setTimeout(() => particle.remove(), 1000);
+        }
+    }
+
+    // 添加受伤闪烁效果
+    addHurtAnimation(x, y) {
+        const cell = this.getCellElement(x, y);
+        cell.classList.add('hurt-animation');
+        setTimeout(() => cell.classList.remove('hurt-animation'), 500);
+    }
+
+    // 辅助方法：获取指定坐标的单元格元素
+    getCellElement(x, y) {
+        return this.gameBoard.children[y * this.gridSize + x];
+    }
+
+    // 辅助方法：查找角色位置
+    findCharacterPosition(character) {
+        for (let y = 0; y < this.gridSize; y++) {
+            for (let x = 0; x < this.gridSize; x++) {
+                if (this.grid[y][x] === character) {
+                    return {x, y};
+                }
+            }
+        }
+        return null;
+    }
+
+    createBattleInfoPanel() {
+        this.battleInfoPanel = document.createElement('div');
+        this.battleInfoPanel.id = 'battle-info-panel';
+        this.battleInfoPanel.classList.add('hidden');
+        document.body.appendChild(this.battleInfoPanel);
+    }
+
+    showBattleInfo(message, duration = 3000) {
+        this.battleInfoPanel.innerHTML = message;
+        this.battleInfoPanel.classList.remove('hidden');
+        this.battleInfoPanel.classList.add('show');
+        
+        setTimeout(() => {
+            this.battleInfoPanel.classList.remove('show');
+            this.battleInfoPanel.classList.add('hidden');
+        }, duration);
     }
 }
 

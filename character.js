@@ -78,28 +78,28 @@ class ZhaoYun extends Character {
 }
 
 class Infantry extends Character {
-    constructor(level) {
-        const health = Character.getRandomInt(40, 60) + level * 5;
-        const attack = Character.getRandomInt(10, 15) + level;
-        const defense = Character.getRandomInt(5, 8) + Math.floor(level / 2);
+    constructor(level, levelBonus = 0) {
+        const health = Character.getRandomInt(40, 60) + level * 5 + levelBonus * 2;
+        const attack = Character.getRandomInt(10, 15) + level + levelBonus;
+        const defense = Character.getRandomInt(5, 8) + Math.floor(level / 2) + Math.floor(levelBonus / 2);
         super('步兵', health, attack, defense, 'images/infantry.png');
     }
 }
 
 class Archer extends Character {
-    constructor(level) {
-        const health = Character.getRandomInt(30, 50) + level * 4;
-        const attack = Character.getRandomInt(12, 18) + level;
-        const defense = Character.getRandomInt(3, 6) + Math.floor(level / 2);
+    constructor(level, levelBonus = 0) {
+        const health = Character.getRandomInt(30, 50) + level * 4 + levelBonus * 2;
+        const attack = Character.getRandomInt(12, 18) + level + levelBonus;
+        const defense = Character.getRandomInt(3, 6) + Math.floor(level / 2) + Math.floor(levelBonus / 2);
         super('弓箭手', health, attack, defense, 'images/archer.png');
     }
 }
 
 class Boss extends Character {
-    constructor(level) {
-        const health = Character.getRandomInt(80, 100) + level * 10;
-        const attack = Character.getRandomInt(18, 25) + level * 2;
-        const defense = Character.getRandomInt(10, 15) + level;
+    constructor(level, levelBonus = 0) {
+        const health = Character.getRandomInt(80, 100) + level * 10 + levelBonus * 5;
+        const attack = Character.getRandomInt(18, 25) + level * 2 + levelBonus * 2;
+        const defense = Character.getRandomInt(10, 15) + level + levelBonus;
         super('武将', health, attack, defense, 'images/boss.png');
     }
 }

@@ -338,3 +338,78 @@ h1, h2 {
     flex: 0 1 auto;
     margin: 0 2px;
 }
+
+/* 攻击动画 */
+@keyframes attack {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+.attack-animation {
+    animation: attack 0.3s ease-in-out;
+}
+
+/* 技能释放粒子效果 */
+@keyframes particle {
+    0% { transform: translate(0, 0); opacity: 1; }
+    100% { transform: translate(var(--x), var(--y)); opacity: 0; }
+}
+
+.particle {
+    position: absolute;
+    width: 5px;
+    height: 5px;
+    background-color: #ffff00;
+    border-radius: 50%;
+    animation: particle 1s linear forwards;
+}
+
+/* 受伤闪烁效果 */
+@keyframes hurt {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+.hurt-animation {
+    animation: hurt 0.5s ease-in-out;
+}
+
+#battle-info-panel {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    max-width: 80%;
+    text-align: center;
+    z-index: 1000;
+    transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+}
+
+#battle-info-panel.hidden {
+    opacity: 0;
+    transform: translate(-50%, -60%);
+    pointer-events: none;
+}
+
+#battle-info-panel.show {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+}
+
+#game-credits {
+    position: fixed;
+    bottom: 10px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 14px;
+    color: var(--text-color);
+    padding: 5px;
+    background-color: rgba(255, 255, 255, 0.7);
+}

@@ -6,6 +6,9 @@
     --button-hover-color: #a0522d;
     --text-color: #4a3728;
     --button-text-color: #ffffff;
+    --cell-font-size: 22px; /* 新增CSS变量 */
+    --zhaoyun-bg-color: #1E90FF;
+    --item-bg-color: #FFF9C4; /* 添加这行，定义浅黄色 */
 }
 
 body {
@@ -24,14 +27,12 @@ body {
 #game-container {
     display: flex;
     flex-direction: column;
-    background-color: rgba(255, 255, 255, 0.9);
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 0 20px rgba(139, 69, 19, 0.3);
-    width: 95vw;
-    height: 95vh;
-    max-width: 800px;
-    max-height: 800px;
+    width: 100vw;
+    height: 100vh;
+    max-width: none;
+    max-height: none;
+    padding: 10px;
+    box-sizing: border-box;
 }
 
 .screen {
@@ -58,7 +59,6 @@ body {
     justify-content: center;
     align-items: center;
     width: 100%;
-    margin-bottom: 10px;
 }
 
 #game-board {
@@ -108,39 +108,96 @@ body {
 
 .cell-stats {
     position: absolute;
-    bottom: 2px;
-    left: 2px;
-    right: 2px;
+    bottom: 0;
+    left: 0;
+    right: 0;
     display: flex;
-    justify-content: space-between;
-    font-size: 10px;
-    background-color: rgba(255, 255, 255, 0.7);
+    flex-direction: column;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
     padding: 2px;
-    border-radius: 3px;
+    border-radius: 0 0 5px 5px;
     z-index: 2;
+    font-size: var(--cell-font-size, 14px);
+    line-height: 1;
 }
 
-#info-area {
+.cell-stats-row {
+    display: flex;
+    justify-content: space-around;
     width: 100%;
+}
+
+.cell-stats span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+}
+
+.cell-stats .icon {
+    font-size: 1.2em;
+}
+
+.cell-stats .value {
+    font-size: 0.9em;
+}
+
+/* 移除这些样式，因为我们不再使用图标 */
+/* .cell-stats span::before { ... } */
+/* .cell-stats .health::before { ... } */
+/* .cell-stats .attack::before { ... } */
+/* .cell-stats .defense::before { ... } */
+
+#info-area {
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-top: 20px;
+    width: 100%;
+    padding: 10px 0;
 }
 
-#info-panel {
-    background-color: var(--cell-bg-color);
-    padding: 15px;
-    border-radius: 5px;
+#exp-bar {
     width: 100%;
-    margin-bottom: 15px;
-    box-shadow: 0 0 10px rgba(139, 69, 19, 0.2);
+    height: 10px;
+    background-color: #ddd;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+
+#exp-progress {
+    height: 100%;
+    background-color: #4CAF50;
+    border-radius: 5px;
+    transition: width 0.3s ease;
 }
 
 #skill-buttons {
     display: flex;
     justify-content: space-around;
     width: 100%;
+    max-width: 600px;
+}
+
+#skill-buttons button {
+    flex: 1;
+    margin: 0 5px;
+    padding: 10px;
+    font-size: 16px;
+}
+
+@media (max-width: 768px) {
+    #skill-buttons button {
+        font-size: 14px;
+        padding: 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    #skill-buttons button {
+        font-size: 12px;
+        padding: 6px;
+    }
 }
 
 button {
@@ -203,10 +260,6 @@ h1, h2 {
         max-height: 90vw;
     }
 
-    .cell-stats {
-        font-size: 8px;
-    }
-
     button {
         font-size: 16px;
         padding: 10px 15px;
@@ -252,4 +305,36 @@ h1, h2 {
         padding: 6px; /* 减小内边距 */
         max-width: 150px;
     }
+}
+
+/* 新增：道具图标的特殊样式 */
+.cell-icon.item-icon {
+    width: 50%;
+    height: 50%;
+    object-fit: contain;
+}
+
+/* 修改道具图标的样式，但排除出口 */
+.cell-icon.item-icon:not(.exit-icon) {
+    width: 50%;
+    height: 50%;
+    object-fit: contain;
+}
+
+/* 出口图标特殊样式 */
+.cell-icon.exit-icon {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* 新增样式 */
+.cell-stats.numbers-only {
+    justify-content: space-between;
+    padding: 2px 4px;
+}
+
+.cell-stats.numbers-only span {
+    flex: 0 1 auto;
+    margin: 0 2px;
 }

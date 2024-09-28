@@ -26,6 +26,7 @@ class Game {
         document.getElementById('boost-btn').addEventListener('click', () => this.useSkill('boost'));
 
         this.sweepAttackMultiplier = 0.6; // 初始天翔龙倍率
+        this.jingLeiLongActive = false;
     }
 
     startGame() {
@@ -132,10 +133,50 @@ class Game {
             }
         }
 
+        // 从第五关开始，在出口周围放置更多武将
+        if (this.level >= 5) {
+            const exitPos = this.findExit();
+            if (exitPos) {
+                this.placeEnemiesAroundExit(exitPos, Math.min(4, this.gridSize - 2));
+            }
+        }
+
         for (let i = 0; i < enemiesToPlace; i++) {
             let pos = this.getRandomEmptyCell();
             if (pos) this.grid[pos.y][pos.x] = this.generateEnemy();
         }
+    }
+
+    placeEnemiesAroundExit(exitPos, count) {
+        const directions = [
+            {dx: -1, dy: 0}, {dx: 1, dy: 0},
+            {dx: 0, dy: -1}, {dx: 0, dy: 1},
+            {dx: -1, dy: -1}, {dx: -1, dy: 1},
+            {dx: 1, dy: -1}, {dx: 1, dy: 1}
+        ];
+
+        for (let i = 0; i < count; i++) {
+            if (directions.length === 0) break;
+            const randomIndex = Math.floor(Math.random() * directions.length);
+            const dir = directions.splice(randomIndex, 1)[0];
+            const newX = exitPos.x + dir.dx;
+            const newY = exitPos.y + dir.dy;
+
+            if (this.isValidCell(newX, newY) && this.grid[newY][newX] === null) {
+                this.grid[newY][newX] = new Boss(this.playerLevel);
+            }
+        }
+    }
+
+    findExit() {
+        for (let y = 0; y < this.gridSize; y++) {
+            for (let x = 0; x < this.gridSize; x++) {
+                if (this.grid[y][x] instanceof Exit) {
+                    return {x, y};
+                }
+            }
+        }
+        return null;
     }
 
     markAdjacentCells(x, y) {
@@ -177,6 +218,12 @@ class Game {
         this.gameBoard.style.gridTemplateColumns = `repeat(${this.gridSize}, 1fr)`;
         this.gameBoard.style.gridTemplateRows = `repeat(${this.gridSize}, 1fr)`;
 
+        // 计算字体大小
+        const baseFontSize = 14; // 调整基础字体大小
+        const minFontSize = 6; // 调整最小字体大小
+        const fontSizeRatio = cellSize / 100; // 假设100px是标准格子大小
+        const fontSize = Math.max(baseFontSize * fontSizeRatio, minFontSize);
+
         for (let y = 0; y < this.gridSize; y++) {
             for (let x = 0; x < this.gridSize; x++) {
                 const cell = document.createElement('div');
@@ -189,23 +236,45 @@ class Game {
                     const img = document.createElement('img');
                     img.src = content.iconPath;
                     img.classList.add('cell-icon');
+                    if (content instanceof Item) {
+                        img.classList.add('item-icon');
+                        if (content instanceof Exit) {
+                            img.classList.add('exit-icon');
+                        }
+                        cell.style.backgroundColor = 'var(--item-bg-color)';
+                    } else if (content instanceof ZhaoYun) {
+                        cell.style.backgroundColor = 'var(--zhaoyun-bg-color)';
+                    }
                     cell.appendChild(img);
 
                     if (content instanceof Character) {
                         const stats = document.createElement('div');
                         stats.classList.add('cell-stats');
-                        stats.innerHTML = `
-                            <span>❤️${content.health}</span>
-                            <span>⚔️${content.attack}</span>
-                            <span>🛡️${content.defense}</span>
-                        `;
+                        stats.style.setProperty('--cell-font-size', `${fontSize}px`);
+                        
+                        if (fontSize < 6) {
+                            // 如果字体太小，不显示任何信息
+                            stats.style.display = 'none';
+                        } else {
+                            const iconsRow = document.createElement('div');
+                            iconsRow.classList.add('cell-stats-row');
+                            iconsRow.innerHTML = `
+                                <span class="icon">❤️</span>
+                                <span class="icon">⚔️</span>
+                                <span class="icon">🛡️</span>
+                            `;
+                            stats.appendChild(iconsRow);
+
+                            const valuesRow = document.createElement('div');
+                            valuesRow.classList.add('cell-stats-row');
+                            valuesRow.innerHTML = `
+                                <span class="value">${content.health}</span>
+                                <span class="value">${content.attack}</span>
+                                <span class="value">${content.defense}</span>
+                            `;
+                            stats.appendChild(valuesRow);
+                        }
                         cell.appendChild(stats);
-                    }
-                    
-                    if (content instanceof Exit) {
-                        cell.style.backgroundColor = 'gold';
-                    } else if (content instanceof Item) {
-                        cell.style.backgroundColor = 'lightgreen';
                     }
                 } else {
                     cell.style.backgroundColor = 'white';
@@ -218,17 +287,9 @@ class Game {
     }
 
     updateInfoPanel() {
-        this.infoPanel.innerHTML = `
-            <h3>长坂坡</h3>
-            <div class="info-grid">
-                <div>等级: ${this.player.level}</div>
-                <div>生命值: ${this.player.health}/${this.player.maxHealth}</div>
-                <div>攻击力: ${this.player.attack}</div>
-                <div>防御力: ${this.player.defense}/${this.player.maxDefense}</div>
-                <div>经验值: ${this.player.exp}/${this.player.level * 100}</div>
-                <div>当前关卡: ${this.level}</div>
-            </div>
-        `;
+        const expBar = document.getElementById('exp-bar');
+        const expPercentage = (this.player.exp / (this.player.level * 100)) * 100;
+        expBar.innerHTML = `<div id="exp-progress" style="width: ${expPercentage}%"></div>`;
     }
 
     handleCellClick(x, y) {
@@ -337,6 +398,14 @@ class Game {
             heal: false,
             boost: false
         };
+        
+        // 移除惊雷之龙效果
+        if (this.jingLeiLongActive) {
+            this.player.attack -= 10;
+            this.player.defense -= 20;
+            this.jingLeiLongActive = false;
+        }
+        
         this.initLevel();
         this.renderGrid();
         this.updateInfoPanel();
@@ -408,20 +477,14 @@ class Game {
     }
 
     jingLeiLong() {
-        const boostAmount = 5;
-        this.player.attack += boostAmount;
-        this.player.defense += boostAmount;
-        setTimeout(() => {
-            this.player.attack -= boostAmount;
-            if (this.player.defense >= boostAmount) {
-                this.player.defense -= boostAmount;
-            } else {
-                this.player.defense = 0;
-            }
-            alert('惊雷之龙效果已经消失！');
-            this.updateInfoPanel();
-        }, 30000); // 30秒后效果消失
-        return `赵云使用了惊雷之龙，攻击力和防御力暂时提升了${boostAmount}点！`;
+        if (this.jingLeiLongActive) {
+            this.player.attack -= 10;
+            this.player.defense -= 20;
+        }
+        this.player.attack += 10;
+        this.player.defense += 20;
+        this.jingLeiLongActive = true;
+        return `赵云使用了惊雷之龙，攻击力提升了10点，防御力提升了20点！`;
     }
 
     updateSkillButtons() {

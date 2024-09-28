@@ -157,7 +157,7 @@ class Game {
 
     renderGrid() {
         this.gameBoard.innerHTML = '';
-        const gameBoardSize = Math.min(window.innerWidth * 0.6, window.innerHeight * 0.8);
+        const gameBoardSize = Math.min(window.innerWidth * 0.95, window.innerHeight * 0.6);
         this.gameBoard.style.width = `${gameBoardSize}px`;
         this.gameBoard.style.height = `${gameBoardSize}px`;
         const cellSize = gameBoardSize / this.gridSize - 2;
@@ -190,9 +190,9 @@ class Game {
                         <div class="cell-icon">${content.icon}</div>
                         ${content instanceof Character ? `
                             <div class="cell-stats">
-                                ❤️${content.health}<br>
-                                ⚔️${content.attack}<br>
-                                🛡️${content.defense}
+                                <span>❤️${content.health}</span>
+                                <span>⚔️${content.attack}</span>
+                                <span>🛡️${content.defense}</span>
                             </div>
                         ` : ''}
                     `;
@@ -207,12 +207,14 @@ class Game {
     updateInfoPanel() {
         this.infoPanel.innerHTML = `
             <h3>长坂坡</h3>
-            <p>等级: ${this.player.level}</p>
-            <p>生命值: ${this.player.health}/${this.player.maxHealth}</p>
-            <p>攻击力: ${this.player.attack}</p>
-            <p>防御力: ${this.player.defense}/${this.player.maxDefense}</p>
-            <p>经验值: ${this.player.exp}/${this.player.level * 100}</p>
-            <p>当前关卡: ${this.level}</p>
+            <div class="info-grid">
+                <div>等级: ${this.player.level}</div>
+                <div>生命值: ${this.player.health}/${this.player.maxHealth}</div>
+                <div>攻击力: ${this.player.attack}</div>
+                <div>防御力: ${this.player.defense}/${this.player.maxDefense}</div>
+                <div>经验值: ${this.player.exp}/${this.player.level * 100}</div>
+                <div>当前关卡: ${this.level}</div>
+            </div>
         `;
     }
 
@@ -398,7 +400,11 @@ class Game {
         this.player.defense += boostAmount;
         setTimeout(() => {
             this.player.attack -= boostAmount;
-            this.player.defense -= boostAmount;
+            if (this.player.defense >= boostAmount) {
+                this.player.defense -= boostAmount;
+            } else {
+                this.player.defense = 0;
+            }
             alert('惊雷之龙效果已经消失！');
             this.updateInfoPanel();
         }, 30000); // 30秒后效果消失
@@ -406,12 +412,17 @@ class Game {
     }
 
     updateSkillButtons() {
-        document.getElementById('attack-btn').textContent = '天翔之龙';
-        document.getElementById('heal-btn').textContent = '破云之龙';
-        document.getElementById('boost-btn').textContent = '惊雷之龙';
-        document.getElementById('attack-btn').disabled = this.skillsUsed.attack;
-        document.getElementById('heal-btn').disabled = this.skillsUsed.heal;
-        document.getElementById('boost-btn').disabled = this.skillsUsed.boost;
+        const attackBtn = document.getElementById('attack-btn');
+        const healBtn = document.getElementById('heal-btn');
+        const boostBtn = document.getElementById('boost-btn');
+
+        attackBtn.innerHTML = '天翔<br>之龙';
+        healBtn.innerHTML = '破云<br>之龙';
+        boostBtn.innerHTML = '惊雷<br>之龙';
+
+        attackBtn.disabled = this.skillsUsed.attack;
+        healBtn.disabled = this.skillsUsed.heal;
+        boostBtn.disabled = this.skillsUsed.boost;
     }
 }
 

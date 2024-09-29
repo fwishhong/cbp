@@ -474,6 +474,9 @@ class Game {
             {dx: 0, dy: -1}, {dx: 0, dy: 1}
         ];
 
+        this.addEffectToCell(playerPos.x, playerPos.y, 'tianxiang-effect');
+        this.addAnimationToCell(playerPos.x, playerPos.y, 'shake-animation');
+
         for (let dir of directions) {
             const x = playerPos.x + dir.dx;
             const y = playerPos.y + dir.dy;
@@ -481,18 +484,24 @@ class Game {
                 const damage = Math.floor(this.player.attack * this.sweepAttackMultiplier);
                 this.grid[y][x].takeDamage(damage);
                 enemiesHit++;
+                this.addAnimationToCell(x, y, 'flash-animation');
                 if (this.grid[y][x].health <= 0) {
-                    this.grid[y][x] = this.generateEnemy(); // 替换为新敌人而不是null
+                    this.grid[y][x] = this.generateEnemy();
                 }
             }
         }
 
+        setTimeout(() => this.removeEffectFromCell(playerPos.x, playerPos.y, 'tianxiang-effect'), 500);
         return `赵云使用了天翔之龙，对周围的${enemiesHit}个敌人造成了${this.sweepAttackMultiplier.toFixed(1)}倍伤害！`;
     }
 
     poYunLong() {
         const healAmount = this.player.maxHealth * 0.3;
         this.player.heal(healAmount);
+        const playerPos = this.findPlayer();
+        this.addEffectToCell(playerPos.x, playerPos.y, 'poyun-effect');
+        this.addAnimationToCell(playerPos.x, playerPos.y, 'flash-animation');
+        setTimeout(() => this.removeEffectFromCell(playerPos.x, playerPos.y, 'poyun-effect'), 500);
         return `赵云使用了破云之龙，恢复了${Math.floor(healAmount)}点生命值！`;
     }
 
@@ -504,6 +513,10 @@ class Game {
         this.player.attack += 10;
         this.player.defense += 20;
         this.jingLeiLongActive = true;
+        const playerPos = this.findPlayer();
+        this.addEffectToCell(playerPos.x, playerPos.y, 'jinglei-effect');
+        this.addAnimationToCell(playerPos.x, playerPos.y, 'shake-animation');
+        setTimeout(() => this.removeEffectFromCell(playerPos.x, playerPos.y, 'jinglei-effect'), 500);
         return `赵云使用了惊雷之龙，攻击力提升了10点，防御力提升了20点！`;
     }
 
@@ -572,8 +585,10 @@ class Game {
         document.body.appendChild(this.battleInfoPanel);
     }
 
-    showBattleInfo(message, duration = 3000) {
-        this.battleInfoPanel.innerHTML = message;
+    showBattleInfo(message, duration = 1200) {
+        this.battleInfoPanel.innerHTML = `
+            <div id="battle-info-content">${this.formatBattleInfo(message)}</div>
+        `;
         this.battleInfoPanel.classList.remove('hidden');
         this.battleInfoPanel.classList.add('show');
         
@@ -581,6 +596,30 @@ class Game {
             this.battleInfoPanel.classList.remove('show');
             this.battleInfoPanel.classList.add('hidden');
         }, duration);
+    }
+
+    formatBattleInfo(message) {
+        return message
+            .replace(/(\d+)点伤害/g, '<span class="damage">$1点伤害</span>')
+            .replace(/(\d+)点生命值/g, '<span class="heal">$1点生命值</span>')
+            .replace(/暴击/g, '<span class="crit">暴击</span>')
+            .replace(/闪避/g, '<span class="dodge">闪避</span>');
+    }
+
+    addEffectToCell(x, y, effectClass) {
+        const cell = this.getCellElement(x, y);
+        cell.classList.add(effectClass);
+    }
+
+    removeEffectFromCell(x, y, effectClass) {
+        const cell = this.getCellElement(x, y);
+        cell.classList.remove(effectClass);
+    }
+
+    addAnimationToCell(x, y, animationClass) {
+        const cell = this.getCellElement(x, y);
+        cell.classList.add(animationClass);
+        setTimeout(() => cell.classList.remove(animationClass), 500);
     }
 }
 

@@ -73,6 +73,7 @@ body {
     max-width: 600px;
     max-height: 600px;
     margin: auto;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
 }
 
 .cell {
@@ -89,6 +90,9 @@ body {
     overflow: hidden;
     transition: all 0.3s ease;
     position: relative;
+    background: linear-gradient(145deg, var(--cell-bg-color), #e6d0b3);
+    box-shadow: inset 2px 2px 5px rgba(255, 255, 255, 0.5),
+                inset -2px -2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .cell:hover {
@@ -101,7 +105,7 @@ body {
     height: 100%;
     object-fit: cover; /* 改为 cover，确保图片填满整个区域 */
     z-index: 1;
-    filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.3));
+    filter: drop-shadow(2px 2px 3px rgba(0, 0, 0, 0.3));
 }
 
 /* 移除 .cell-icon.item-icon 的特殊样式，因为现在所有图标都使用相同的样式 */
@@ -120,6 +124,7 @@ body {
     z-index: 2;
     font-size: var(--cell-font-size, 14px);
     line-height: 1;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .cell-stats-row {
@@ -350,30 +355,40 @@ h1, h2 {
     animation: attack 0.3s ease-in-out;
 }
 
-/* 技能释放粒子效果 */
-@keyframes particle {
-    0% { transform: translate(0, 0); opacity: 1; }
-    100% { transform: translate(var(--x), var(--y)); opacity: 0; }
+/* 添加新的震动效果 */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+  20%, 40%, 60%, 80% { transform: translateX(5px); }
 }
 
-.particle {
-    position: absolute;
-    width: 5px;
-    height: 5px;
-    background-color: #ffff00;
-    border-radius: 50%;
-    animation: particle 1s linear forwards;
+.shake-animation {
+  animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
 }
 
-/* 受伤闪烁效果 */
-@keyframes hurt {
-    0% { opacity: 1; }
-    50% { opacity: 0.5; }
-    100% { opacity: 1; }
+/* 添加新的闪烁效果 */
+@keyframes flash {
+  0%, 50%, 100% { opacity: 1; }
+  25%, 75% { opacity: 0; }
 }
 
-.hurt-animation {
-    animation: hurt 0.5s ease-in-out;
+.flash-animation {
+  animation: flash 0.5s linear;
+}
+
+/* 天翔之龙效果 */
+.tianxiang-effect {
+  background-color: rgba(74, 144, 226, 0.3);
+}
+
+/* 破云之龙效果 */
+.poyun-effect {
+  background-color: rgba(255, 255, 255, 0.5);
+}
+
+/* 惊雷之龙效果 */
+.jinglei-effect {
+  background-color: rgba(255, 255, 0, 0.3);
 }
 
 #battle-info-panel {
@@ -381,25 +396,57 @@ h1, h2 {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background-color: rgba(0, 0, 0, 0.8);
+    background-color: rgba(0, 0, 0, 0.85);
     color: white;
     padding: 20px;
-    border-radius: 10px;
+    border-radius: 15px;
     max-width: 80%;
+    width: 300px;
     text-align: center;
     z-index: 1000;
-    transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+    transition: all 0.3s ease-in-out;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+    border: 2px solid #4a90e2;
+    font-family: 'Ma Shan Zheng', cursive, Arial, sans-serif;
 }
 
 #battle-info-panel.hidden {
     opacity: 0;
-    transform: translate(-50%, -60%);
+    transform: translate(-50%, -60%) scale(0.9);
     pointer-events: none;
 }
 
 #battle-info-panel.show {
     opacity: 1;
-    transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%) scale(1);
+}
+
+#battle-info-content {
+    margin-bottom: 15px;
+}
+
+#battle-info-panel .damage {
+    color: #ff4500;
+    font-weight: bold;
+    font-size: 1.2em;
+}
+
+#battle-info-panel .heal {
+    color: #32cd32;
+    font-weight: bold;
+    font-size: 1.2em;
+}
+
+#battle-info-panel .crit {
+    color: #ffd700;
+    font-weight: bold;
+    font-size: 1.2em;
+}
+
+#battle-info-panel .dodge {
+    color: #1e90ff;
+    font-weight: bold;
+    font-size: 1.2em;
 }
 
 #game-credits {

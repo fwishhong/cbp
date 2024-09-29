@@ -7,8 +7,8 @@
     --text-color: #4a3728;
     --button-text-color: #ffffff;
     --cell-font-size: 22px; /* 新增CSS变量 */
-    --zhaoyun-bg-color: #1E90FF;
-    --item-bg-color: #FFF9C4; /* 添加这行，定义浅黄色 */
+    --zhaoyun-bg-color: #1E90FF; /* 蓝色 */
+    --item-bg-color: #FFD700; /* 金黄色 */
 }
 
 body {
@@ -459,4 +459,83 @@ h1, h2 {
     color: var(--text-color);
     padding: 5px;
     background-color: rgba(255, 255, 255, 0.7);
+}
+
+/* 赵云的特殊边框样式 */
+.cell[style*="var(--zhaoyun-bg-color)"] {
+    background: var(--zhaoyun-bg-color);
+    border: 3px solid #00BFFF;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 5px #00BFFF, inset 0 0 2px #00BFFF;
+    }
+    50% {
+        box-shadow: 0 0 15px #00BFFF, inset 0 0 7px #00BFFF;
+    }
+    100% {
+        box-shadow: 0 0 5px #00BFFF, inset 0 0 2px #00BFFF;
+    }
+}
+
+.cell[style*="var(--item-bg-color)"] {
+    background: var(--item-bg-color);
+}
+
+#intro-panel {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.9);
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    transition: all 0.3s ease-in-out;
+    font-family: 'Ma Shan Zheng', cursive, Arial, sans-serif;
+}
+
+#intro-panel.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+#intro-panel.show {
+    opacity: 1;
+}
+
+#intro-content {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+#intro-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.3;
+}
+
+#intro-content p {
+    font-size: 24px;
+    line-height: 1.5;
+    max-width: 80%;
+    position: relative;
+    z-index: 1;
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 20px;
+    border-radius: 10px;
 }

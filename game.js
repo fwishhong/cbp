@@ -30,15 +30,16 @@ class Game {
         this.jingLeiLongActive = false;
 
         this.createBattleInfoPanel();
+        this.createIntroPanel();
+
+        this.difficultyFactor = 1.0;
+        this.consecutiveWins = 0;
+        this.consecutiveLosses = 0;
     }
 
     startGame() {
-        document.getElementById('start-screen').classList.add('hidden');
-        document.getElementById('game-screen').classList.remove('hidden');
-        this.initLevel();
-        this.renderGrid();
-        this.updateInfoPanel();
-        this.updateSkillButtons();
+        console.log('startGame method called');
+        this.showIntroPanel();
     }
 
     showTutorial() {
@@ -103,12 +104,24 @@ class Game {
 
     generateEnemy() {
         const enemyType = Math.random();
-        if (enemyType < 0.6) {
-            return new Infantry(this.playerLevel);
-        } else if (enemyType < 0.9) {
-            return new Archer(this.playerLevel);
+        const levelBonus = this.level - 1;
+        const playerAttack = this.player.attack;
+        const adjustedLevel = Math.floor(this.playerLevel * this.difficultyFactor);
+
+        if (playerAttack <= 40) {
+            if (enemyType < 0.6) {
+                return new Infantry(adjustedLevel, levelBonus, playerAttack);
+            } else {
+                return new Archer(adjustedLevel, levelBonus, playerAttack);
+            }
         } else {
-            return new Boss(this.playerLevel);
+            if (enemyType < 0.5) {
+                return new Infantry(adjustedLevel, levelBonus, playerAttack);
+            } else if (enemyType < 0.8) {
+                return new Archer(adjustedLevel, levelBonus, playerAttack);
+            } else {
+                return new Boss(adjustedLevel, levelBonus, playerAttack);
+            }
         }
     }
 
@@ -166,7 +179,12 @@ class Game {
             const newY = exitPos.y + dir.dy;
 
             if (this.isValidCell(newX, newY) && this.grid[newY][newX] === null) {
-                this.grid[newY][newX] = new Boss(this.playerLevel);
+                if (this.player.attack <= 40) {
+                    // 当赵云攻击力不超过40时，在出口周围生成步兵或弓箭手
+                    this.grid[newY][newX] = Math.random() < 0.6 ? new Infantry(this.playerLevel) : new Archer(this.playerLevel);
+                } else {
+                    this.grid[newY][newX] = new Boss(this.playerLevel);
+                }
             }
         }
     }
@@ -363,9 +381,11 @@ class Game {
             } else {
                 let expGained = 10;
                 if (defender instanceof Boss) {
-                    expGained = 30; // Boss给予30点经验值
+                    expGained = 30;
                 }
-                this.player.gainExp(expGained);
+                if (this.player.gainExp(expGained)) {
+                    this.handlePlayerLevelUp();
+                }
                 result += `<br>赵云获得了${expGained}点经验值！`;
             }
         } else {
@@ -388,6 +408,17 @@ class Game {
             }
         }
         
+        if (defender.health <= 0) {
+            if (defender instanceof ZhaoYun) {
+                this.consecutiveLosses++;
+                this.consecutiveWins = 0;
+            } else {
+                this.consecutiveWins++;
+                this.consecutiveLosses = 0;
+            }
+            this.adjustDifficulty();
+        }
+        
         this.showBattleInfo(result);
         return result;
     }
@@ -405,12 +436,36 @@ class Game {
 
     nextLevel() {
         this.level++;
+        let introText = "";
+
+        const introTexts = {
+            1: "曹操大军南下。刘备军节节败退，转战荆州。赵云奉命断后，保护刘备家眷，一场惊心动魄的追逃大戏即将上演",
+            2: "赵云暗自寻思道：'主公将甘、糜两位夫人和小主人阿斗全部托付在我身上，现在都在军中失散，我还有什么面目去见主公？不如去决一死战，好歹要寻到主母和小主人的下落！'",
+            3: "赵云正行进间，看到有一人卧倒在草丛中，一看正是简雍。赵云急忙问简雍：'先生看到两位主母没有？'简雍说：'两位主母舍弃了车辆，怀抱阿斗而逃'",
+            4: "赵云纵马朝南赶去。只见一伙百姓数百人，乱哄哄地往前走。赵云大叫道：'这其中有甘夫人吗？'夫人在人群后面看到了赵云后放声大哭。",
+            5: "赵云大喝一声，挺枪纵马直取淳于导，淳于导被赵云一枪刺落于马下。赵去上前救下糜竺，夺得战马两匹。赵云请甘夫人上马，杀开一条血路，直送到长坂桥前",
+            6: "正行进之间，只见一将手提铁枪，背着一口剑，领十数名骑兵跃马杀来。赵云也不搭话，直取那将。交马只一回合就把那将一枪刺倒，跟随的骑兵一哄而散。原来那将是曹操随身背剑官叫做夏侯恩。",
+            7: "只见有一户人家已经被火烧坏土墙，糜夫人抱着阿斗，坐在墙下枯井旁啼哭，赵云急忙下马伏地便拜。赵云三回五次请求夫人上马，夫人坚持不肯上马，四面喊杀声又起。赵云厉声说道：'夫人不听我的话，追兵马上杀到，那怎么应对？'糜夫人把阿斗轻轻放到地上，翻身投入枯井中而死。",
+            8: "赵云看到夫人已死，恐怕曹军前来盗尸，就将土墙推倒，掩盖上枯井。然后解开勒甲绦，放下掩心镜，将阿斗抱护在怀中，重新绰枪上马。早有一将领一队步兵赶来，此将正是曹洪部将晏明，手持三尖两刃刀前来会战赵云。不到三个回合，被赵云一枪刺落马下",
+            9: "背后张郃紧紧赶来，赵云加鞭急行，不想扑通一声，赵云连人带马都落入土坑之中，张郃挺枪来刺。赵云用枪一撑，那匹马也平空一跃，跳出坑外。张郃看到后大惊而退",
+            10: "后面赶来的是马延、张顗，前面阻挡的是焦触、张南，都是袁绍手下降将。赵云力战四将，曹军一拥齐上。赵云拔出青釭剑乱砍，手起处血如涌泉，杀退众军将后直透重围。",
+            11: "赵云怀抱阿斗直透重围，砍倒大旗两面，夺槊三条，前后枪刺剑砍，杀死曹营军将五十多名。",
+            12: "赵云挺枪便刺，钟缙当先挥大斧来迎。两马相交战了不到三个回合，被赵云一枪刺落马下",
+            13: "背后钟绅持戟赶来，马尾相衔，那支戟眼看就要刺到赵云后心，赵云急忙拨转马头，恰好两胸相迎。赵云左手持枪隔过画戟，右手拔出青釭宝剑砍去，连盔带头砍去一半，钟绅落马而死",
+            14: "赵云摆脱追击，纵马奔长坂桥而退，只听得后面喊杀声大震，原来是文聘领军赶来。赵云来到桥边，早已是人困马乏，看到张飞在桥上立马挺矛，便大呼道：'翼德前来助我！'张飞说：'子龙速行，后面追兵自有我来抵挡。'"
+        };
+
+        introText = introTexts[this.level] || "";
+
         if (this.level === 2) {
             this.gridSize = 4; // 第二关变为4x4
         } else if (this.level >= 4) {
             this.gridSize = this.maxGridSize; // 第四关及以后保持5x5
         }
-        // 第三关保持4x4，不需要特别设置
+
+        if (introText) {
+            this.showIntroPanel(introText);
+        }
 
         this.playerLevel = Math.floor((this.level + 1) / 2);
         this.skillsUsed = {
@@ -419,7 +474,7 @@ class Game {
             boost: false
         };
         
-        // 移除惊雷之龙效果
+        // 除惊雷之龙效果
         if (this.jingLeiLongActive) {
             this.player.attack = Math.max(0, this.player.attack - 10);
             this.player.defense = Math.max(0, this.player.defense - 20);
@@ -434,8 +489,10 @@ class Game {
 
     checkGameOver() {
         if (this.gameOver) {
-            this.showBattleInfo("游戏结束！");
-            location.reload(); // 重新加载页面以重启游戏
+            this.showGeneralInfoPanel("赵云力战而亡，长坂坡之战结束。游戏over！", 3000);
+            setTimeout(() => {
+                location.reload(); // 3秒后重新加载页面以重启游戏
+            }, 3000);
         }
     }
 
@@ -620,6 +677,73 @@ class Game {
         const cell = this.getCellElement(x, y);
         cell.classList.add(animationClass);
         setTimeout(() => cell.classList.remove(animationClass), 500);
+    }
+
+    createIntroPanel() {
+        this.introPanel = document.createElement('div');
+        this.introPanel.id = 'intro-panel';
+        this.introPanel.classList.add('hidden');
+        document.body.appendChild(this.introPanel);
+    }
+
+    showIntroPanel(text = "") {
+        console.log('showIntroPanel method called');
+        const introText = text || "公元208年，曹操大军南下。刘备军节节败退，转战荆州。赵云奉命断后，保护刘备家眷，一场惊心动魄的追逃大戏即将上演";
+        this.introPanel.innerHTML = `
+            <div id="intro-content">
+                <img src="images/intro-background.jpg" alt="Intro Background" id="intro-background">
+                <p>${introText}</p>
+            </div>
+        `;
+        this.introPanel.classList.remove('hidden');
+        this.introPanel.classList.add('show');
+        
+        setTimeout(() => {
+            this.introPanel.classList.remove('show');
+            this.introPanel.classList.add('hidden');
+            this.startGameActual(); // 确保这个方法被调用
+        }, 2500);
+    }
+
+    startGameActual() {
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('game-screen').classList.remove('hidden');
+        this.initLevel();
+        this.renderGrid();
+        this.updateInfoPanel();
+        this.updateSkillButtons();
+    }
+
+    showGeneralInfoPanel(text, duration = 2500) {
+        this.introPanel.innerHTML = `
+            <div id="intro-content">
+                <img src="images/intro-background.jpg" alt="Info Background" id="intro-background">
+                <p>${text}</p>
+            </div>
+        `;
+        this.introPanel.classList.remove('hidden');
+        this.introPanel.classList.add('show');
+        
+        setTimeout(() => {
+            this.introPanel.classList.remove('show');
+            this.introPanel.classList.add('hidden');
+        }, duration);
+    }
+
+    handlePlayerLevelUp() {
+        this.player.levelUpStats();
+        this.showGeneralInfoPanel(`赵云突破武艺，升级了！现在是${this.player.level}级。`, 2000);
+    }
+
+    adjustDifficulty() {
+        if (this.consecutiveWins >= 3) {
+            this.difficultyFactor += 0.1;
+            this.consecutiveWins = 0;
+        } else if (this.consecutiveLosses >= 2) {
+            this.difficultyFactor = Math.max(0.8, this.difficultyFactor - 0.1);
+            this.consecutiveLosses = 0;
+        }
+        this.difficultyFactor = Math.min(2.0, this.difficultyFactor); // 设置最大难度系数
     }
 }
 

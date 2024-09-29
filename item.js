@@ -35,7 +35,7 @@ class AttackBoost extends Item {
 
 class DefenseBoost extends Item {
     constructor() {
-        super('defense', 'images/defense_boost.png', 5);
+        super('defense', 'images/defense_boost.png', 20);
     }
 }
 

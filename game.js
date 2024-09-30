@@ -21,7 +21,7 @@ class Game {
             heal: false,
             boost: false
         };
-        
+
         document.getElementById('attack-btn').addEventListener('click', () => this.useSkill('attack'));
         document.getElementById('heal-btn').addEventListener('click', () => this.useSkill('heal'));
         document.getElementById('boost-btn').addEventListener('click', () => this.useSkill('boost'));
@@ -54,7 +54,7 @@ class Game {
 
     initLevel() {
         this.grid = new Array(this.gridSize).fill(null).map(() => new Array(this.gridSize).fill(null));
-        
+
         let playerPos = this.getRandomCell();
         this.grid[playerPos.y][playerPos.x] = this.player;
 
@@ -69,7 +69,7 @@ class Game {
     getRandomCell() {
         let x = Math.floor(Math.random() * this.gridSize);
         let y = Math.floor(Math.random() * this.gridSize);
-        return {x, y};
+        return { x, y };
     }
 
     getFarthestCell(playerPos) {
@@ -81,7 +81,7 @@ class Game {
                 let distance = Math.abs(x - playerPos.x) + Math.abs(y - playerPos.y);
                 if (distance > maxDistance) {
                     maxDistance = distance;
-                    farthestCell = {x, y};
+                    farthestCell = { x, y };
                 }
             }
         }
@@ -94,7 +94,7 @@ class Game {
         for (let y = 0; y < this.gridSize; y++) {
             for (let x = 0; x < this.gridSize; x++) {
                 if (this.grid[y][x] === null) {
-                    emptyCells.push({x, y});
+                    emptyCells.push({ x, y });
                 }
             }
         }
@@ -149,7 +149,7 @@ class Game {
             }
         }
 
-        // 从第五关开始，在出口周围放置更多武将
+        // 从第五关开始，在出口周围置更多武将
         if (this.level >= 5) {
             const exitPos = this.findExit();
             if (exitPos) {
@@ -165,10 +165,10 @@ class Game {
 
     placeEnemiesAroundExit(exitPos, count) {
         const directions = [
-            {dx: -1, dy: 0}, {dx: 1, dy: 0},
-            {dx: 0, dy: -1}, {dx: 0, dy: 1},
-            {dx: -1, dy: -1}, {dx: -1, dy: 1},
-            {dx: 1, dy: -1}, {dx: 1, dy: 1}
+            { dx: -1, dy: 0 }, { dx: 1, dy: 0 },
+            { dx: 0, dy: -1 }, { dx: 0, dy: 1 },
+            { dx: -1, dy: -1 }, { dx: -1, dy: 1 },
+            { dx: 1, dy: -1 }, { dx: 1, dy: 1 }
         ];
 
         for (let i = 0; i < count; i++) {
@@ -193,7 +193,7 @@ class Game {
         for (let y = 0; y < this.gridSize; y++) {
             for (let x = 0; x < this.gridSize; x++) {
                 if (this.grid[y][x] instanceof Exit) {
-                    return {x, y};
+                    return { x, y };
                 }
             }
         }
@@ -202,8 +202,8 @@ class Game {
 
     markAdjacentCells(x, y) {
         const directions = [
-            {dx: -1, dy: 0}, {dx: 1, dy: 0},
-            {dx: 0, dy: -1}, {dx: 0, dy: 1}
+            { dx: -1, dy: 0 }, { dx: 1, dy: 0 },
+            { dx: 0, dy: -1 }, { dx: 0, dy: 1 }
         ];
 
         for (let dir of directions) {
@@ -252,7 +252,7 @@ class Game {
                 cell.style.width = `${cellSize}px`;
                 cell.style.height = `${cellSize}px`;
                 const content = this.grid[y][x];
-                
+
                 if (content instanceof Character || content instanceof Item) {
                     const img = document.createElement('img');
                     img.src = content.iconPath;
@@ -264,7 +264,9 @@ class Game {
                         }
                         cell.style.backgroundColor = 'var(--item-bg-color)';
                     } else if (content instanceof ZhaoYun) {
+                        cell.classList.add('zhaoyun-cell');
                         cell.style.backgroundColor = 'var(--zhaoyun-bg-color)';
+                        cell.style.zIndex = '100'; // 添加一行
                     }
                     cell.appendChild(img);
 
@@ -272,7 +274,7 @@ class Game {
                         const stats = document.createElement('div');
                         stats.classList.add('cell-stats');
                         stats.style.setProperty('--cell-font-size', `${fontSize}px`);
-                        
+
                         if (fontSize < 6) {
                             // 如果字体太小，不显示任何信息
                             stats.style.display = 'none';
@@ -305,12 +307,32 @@ class Game {
                 this.gameBoard.appendChild(cell);
             }
         }
+
+        // 更新经验条和底部文字条的宽度
+        this.updateInfoPanel();
+        this.updateCreditsWidth();
     }
 
     updateInfoPanel() {
         const expBar = document.getElementById('exp-bar');
+        const gameBoard = document.getElementById('game-board');
         const expPercentage = (this.player.exp / (this.player.level * 100)) * 100;
-        expBar.innerHTML = `<div id="exp-progress" style="width: ${expPercentage}%"></div>`;
+
+        // 动态设置经验条的宽度
+        expBar.style.width = gameBoard.offsetWidth + 'px';
+
+        expBar.innerHTML = `
+            <div id="exp-progress" style="width: ${expPercentage}%"></div>
+            <div id="exp-text">${this.player.exp} / ${this.player.level * 100}</div>
+        `;
+    }
+
+    updateCreditsWidth() {
+        const gameCredits = document.getElementById('game-credits');
+        const gameBoard = document.getElementById('game-board');
+
+        // 动态设置底部文字条的宽度
+        gameCredits.style.width = gameBoard.offsetWidth + 'px';
     }
 
     handleCellClick(x, y) {
@@ -352,8 +374,15 @@ class Game {
         const attackerPos = this.findCharacterPosition(attacker);
         const defenderPos = this.findCharacterPosition(defender);
 
-        this.addAttackAnimation(attackerPos.x, attackerPos.y);
-        
+        console.log('Battle positions:', attackerPos, defenderPos);
+
+        if (attackerPos && defenderPos) {
+            // 添加攻击者冲撞动画
+            this.addChargeAnimation(attackerPos.x, attackerPos.y, defenderPos.x, defenderPos.y);
+        } else {
+            console.error('Invalid positions for charge animation');
+        }
+
         const damage = attacker.attack;
         const actualDamage = defender.takeDamage(damage);
         const damageReduction = damage - actualDamage;
@@ -371,7 +400,7 @@ class Game {
                 result += `<br>${defender.type}的防御力减少了${damageReduction}点伤害！`;
             }
         }
-        
+
         if (defender.health <= 0) {
             result += `<br>${defender.type}被击败了！`;
             if (defender instanceof ZhaoYun) {
@@ -400,13 +429,13 @@ class Game {
                     result += `<br>${defender.type}反击，对${attacker.type}造成了${actualCounterDamage}点伤害！`;
                 }
             }
-            
+
             if (attacker.health <= 0) {
                 this.gameOver = true;
                 result += "<br>赵云被击败了，游戏结束！";
             }
         }
-        
+
         if (defender.health <= 0) {
             if (defender instanceof ZhaoYun) {
                 this.consecutiveLosses++;
@@ -417,7 +446,7 @@ class Game {
             }
             this.adjustDifficulty();
         }
-        
+
         this.showBattleInfo(result);
         return result;
     }
@@ -426,7 +455,7 @@ class Game {
         for (let y = 0; y < this.gridSize; y++) {
             for (let x = 0; x < this.gridSize; x++) {
                 if (this.grid[y][x] instanceof ZhaoYun) {
-                    return {x, y};
+                    return { x, y };
                 }
             }
         }
@@ -440,18 +469,6 @@ class Game {
         const introTexts = {
             1: "曹操大军南下。刘备军节节败退，转战荆州。赵云奉命断后，保护刘备家眷，一场惊心动魄的追逃大戏即将上演",
             2: "赵云暗自寻思道：'主公将甘、糜两位夫人和小主人阿斗全部托付在我身上，现在都在军中失散，我还有什么面目去见主公？不如去决一死战，好歹要寻到主母和小主人的下落！'",
-            3: "赵云正行进间，看到有一人卧倒在草丛中，一看正是简雍。赵云急忙问简雍：'先生看到两位主母没有？'简雍说：'两位主母舍弃了车辆，怀抱阿斗而逃'",
-            4: "赵云纵马朝南赶去。只见一伙百姓数百人，乱哄哄地往前走。赵云大叫道：'这其中有甘夫人吗？'夫人在人群后面看到了赵云后放声大哭。",
-            5: "赵云大喝一声，挺枪纵马直取淳于导，淳于导被赵云一枪刺落于马下。赵去上前救下糜竺，夺得战马两匹。赵云请甘夫人上马，杀开一条血路，直送到长坂桥前",
-            6: "正行进之间，只见一将手提铁枪，背着一口剑，领十数名骑兵跃马杀来。赵云也不搭话，直取那将。交马只一回合就把那将一枪刺倒，跟随的骑兵一哄而散。原来那将是曹操随身背剑官叫做夏侯恩。",
-            7: "只见有一户人家已经被火烧坏土墙，糜夫人抱着阿斗，坐在墙下枯井旁啼哭，赵云急忙下马伏地便拜。赵云三回五次请求夫人上马，夫人坚持不肯上马，四面喊杀声又起。赵云厉声说道：'夫人不听我的话，追兵马上杀到，那怎么应对？'糜夫人把阿斗轻轻放到地上，翻身投入枯井中而死。",
-            8: "赵云看到夫人已死，恐怕曹军前来盗尸，就将土墙推倒，掩盖上枯井。然后解开勒甲绦，放下掩心镜，将阿斗抱护在怀中，重新绰枪上马。早有一将领一队步兵赶来，此将正是曹洪部将晏明，手持三尖两刃刀前来会战赵云。不到三个回合，被赵云一枪刺落马下",
-            9: "背后张郃紧紧赶来，赵云加鞭急行，不想扑通一声，赵云连人带马都落入土坑之中，张郃挺枪来刺。赵云用枪一撑，那匹马也平空一跃，跳出坑外。张郃看到后大惊而退",
-            10: "后面赶来的是马延、张顗，前面阻挡的是焦触、张南，都是袁绍手下降将。赵云力战四将，曹军一拥齐上。赵云拔出青釭剑乱砍，手起处血如涌泉，杀退众军将后直透重围。",
-            11: "赵云怀抱阿斗直透重围，砍倒大旗两面，夺槊三条，前后枪刺剑砍，杀死曹营军将五十多名。",
-            12: "赵云挺枪便刺，钟缙当先挥大斧来迎。两马相交战了不到三个回合，被赵云一枪刺落马下",
-            13: "背后钟绅持戟赶来，马尾相衔，那支戟眼看就要刺到赵云后心，赵云急忙拨转马头，恰好两胸相迎。赵云左手持枪隔过画戟，右手拔出青釭宝剑砍去，连盔带头砍去一半，钟绅落马而死",
-            14: "赵云摆脱追击，纵马奔长坂桥而退，只听得后面喊杀声大震，原来是文聘领军赶来。赵云来到桥边，早已是人困马乏，看到张飞在桥上立马挺矛，便大呼道：'翼德前来助我！'张飞说：'子龙速行，后面追兵自有我来抵挡。'"
         };
 
         introText = introTexts[this.level] || "";
@@ -472,14 +489,14 @@ class Game {
             heal: false,
             boost: false
         };
-        
+
         // 除惊雷之龙效果
         if (this.jingLeiLongActive) {
             this.player.attack = Math.floor(this.player.attack / 1.2); // 移除20%攻击力加成
             this.player.defense = Math.floor(this.player.defense / 1.3); // 移除30%防御力加成
             this.jingLeiLongActive = false;
         }
-        
+
         this.initLevel();
         this.renderGrid();
         this.updateInfoPanel();
@@ -497,7 +514,7 @@ class Game {
 
     useSkill(skillType) {
         if (this.skillsUsed[skillType]) {
-            this.showBattleInfo('这个技能在本关卡已经使用过了！');
+            this.showBattleInfo('这技能在本关卡已经用过了！');
             return;
         }
 
@@ -755,6 +772,67 @@ class Game {
             this.consecutiveLosses = 0;
         }
         this.difficultyFactor = Math.min(2.0, this.difficultyFactor); // 设置最大难度系数
+    }
+
+    // 新增方法：添加冲撞动画
+    addChargeAnimation(fromX, fromY, toX, toY) {
+        console.log('Charge animation called:', fromX, fromY, toX, toY);
+        const cell = this.getCellElement(fromX, fromY);
+        if (!cell) {
+            console.error('Cell element not found:', fromX, fromY);
+            return;
+        }
+        const dx = toX - fromX;
+        const dy = toY - fromY;
+        
+        const chargeX = dx * 30;
+        const chargeY = dy * 30;
+
+        // 保存原始样式
+        const originalZIndex = cell.style.zIndex;
+        const originalTransition = cell.style.transition;
+        const originalTransform = cell.style.transform;
+
+        // 设置新样式
+        cell.style.zIndex = '1000';
+        cell.style.position = 'relative';
+        cell.style.transition = 'transform 0.5s ease-in-out'; // 增加动画时间
+
+        console.log('Applying transform:', `translate(${chargeX}px, ${chargeY}px)`);
+        
+        // 使用 requestAnimationFrame 来确保样式更改已应用
+        requestAnimationFrame(() => {
+            cell.style.transform = `translate(${chargeX}px, ${chargeY}px)`;
+            console.log('Transform applied:', cell.style.transform);
+
+            // 添加一个类来触发动画
+            cell.classList.add('charging');
+
+            setTimeout(() => {
+                console.log('Resetting transform');
+                cell.style.transition = 'transform 0.5s ease-in-out'; // 增加返回动画时间
+                cell.style.transform = 'translate(0, 0)'; // 确保重置为原始位置
+                console.log('Transform reset:', cell.style.transform);
+                
+                // 移除charging类
+                cell.classList.remove('charging');
+
+                // 添加震动效果
+                setTimeout(() => {
+                    console.log('Adding shake animation');
+                    cell.classList.add('shake-animation');
+                    setTimeout(() => {
+                        console.log('Removing shake animation');
+                        cell.classList.remove('shake-animation');
+                        
+                        // 恢复原始样式
+                        cell.style.zIndex = originalZIndex;
+                        cell.style.transition = originalTransition;
+                        cell.style.position = 'static';
+                    }, 500);
+                }, 200);
+            }, 500);
+        });
     }
 }
 

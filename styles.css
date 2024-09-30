@@ -93,6 +93,8 @@ body {
     background: linear-gradient(145deg, var(--cell-bg-color), #e6d0b3);
     box-shadow: inset 2px 2px 5px rgba(255, 255, 255, 0.5),
                 inset -2px -2px 5px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease-in-out !important;
+    will-change: transform; /* 优化动画性能 */
 }
 
 .cell:hover {
@@ -103,7 +105,7 @@ body {
 .cell-icon {
     width: 100%;
     height: 100%;
-    object-fit: cover; /* 改为 cover，确保图片填满整个区域 */
+    object-fit: cover; /* 为 cover，确保图片满整个区域 */
     z-index: 1;
     filter: drop-shadow(2px 2px 3px rgba(0, 0, 0, 0.3));
 }
@@ -163,18 +165,39 @@ body {
 }
 
 #exp-bar {
-    width: 100%;
-    height: 10px;
+    width: 100%; /* 宽度设置为100%，以便动态调整 */
+    height: 20px; /* 增加高度 */
     background-color: #ddd;
-    border-radius: 5px;
+    border-radius: 10px; /* 圆角 */
     margin-bottom: 10px;
+    overflow: hidden; /* 确保子元素不会溢出 */
+    position: relative; /* 使内部元素相对定位 */
+    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2); /* 内部阴影 */
 }
 
 #exp-progress {
     height: 100%;
-    background-color: #4CAF50;
-    border-radius: 5px;
-    transition: width 0.3s ease;
+    background: linear-gradient(90deg, #4CAF50, #8BC34A); /* 渐变色 */
+    border-radius: 10px; /* 圆角 */
+    transition: width 0.5s ease; /* 平滑动画 */
+    position: absolute; /* 绝对定位 */
+    top: 0;
+    left: 0;
+}
+
+#exp-text {
+    position: absolute; /* 绝对定位 */
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px; /* 调整字体大小 */
+    color: #fff; /* 白色文字 */
+    font-weight: bold; /* 加粗 */
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); /* 文字阴影 */
 }
 
 #skill-buttons {
@@ -224,7 +247,7 @@ button {
     align-items: center;
     justify-content: center;
     white-space: normal; /* 允许文字换行 */
-    word-break: break-word; /* 长单词可以换行 */
+    word-break: break-word; /* 长单可以换行 */
     color: #ffffff !important; /* 强制使用白色文字 */
 }
 
@@ -358,12 +381,15 @@ h1, h2 {
 /* 添加新的震动效果 */
 @keyframes shake {
   0%, 100% { transform: translateX(0); }
-  10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-  20%, 40%, 60%, 80% { transform: translateX(5px); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-15px); }
+  20%, 40%, 60%, 80% { transform: translateX(15px); }
 }
 
 .shake-animation {
-  animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+  animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both !important;
+  transform: translate3d(0, 0, 0) !important;
+  backface-visibility: hidden !important;
+  perspective: 1000px !important;
 }
 
 /* 添加新的闪烁效果 */
@@ -373,22 +399,22 @@ h1, h2 {
 }
 
 .flash-animation {
-  animation: flash 0.5s linear;
+  animation: flash 0.5s linear !important;
 }
 
 /* 天翔之龙效果 */
 .tianxiang-effect {
-  background-color: rgba(74, 144, 226, 0.3);
+  background-color: rgba(74, 144, 226, 0.3) !important;
 }
 
 /* 破云之龙效果 */
 .poyun-effect {
-  background-color: rgba(255, 255, 255, 0.5);
+  background-color: rgba(255, 255, 255, 0.5) !important;
 }
 
 /* 惊雷之龙效果 */
 .jinglei-effect {
-  background-color: rgba(255, 255, 0, 0.3);
+  background-color: rgba(255, 255, 0, 0.3) !important;
 }
 
 #battle-info-panel {
@@ -450,18 +476,18 @@ h1, h2 {
 }
 
 #game-credits {
-    position: fixed;
-    bottom: 10px;
-    left: 0;
-    right: 0;
+    width: 100%; /* 宽度设置为100%，以便动态调整 */
     text-align: center;
     font-size: 14px;
     color: var(--text-color);
     padding: 5px;
     background-color: rgba(255, 255, 255, 0.7);
+    position: relative; /* 使内部元素相对定位 */
+    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2); /* 内部阴影 */
+    margin-top: 10px; /* 增加顶部间距 */
 }
 
-/* 赵云的特殊边框样式 */
+/* 赵云的特边框样式 */
 .cell[style*="var(--zhaoyun-bg-color)"] {
     background: var(--zhaoyun-bg-color);
     border: 3px solid #00BFFF;
@@ -538,4 +564,30 @@ h1, h2 {
     background-color: rgba(0, 0, 0, 0.7);
     padding: 20px;
     border-radius: 10px;
+}
+
+.zhaoyun-cell {
+    z-index: 100 !important;
+}
+
+.charging {
+    will-change: transform !important;
+}
+
+.cell {
+    transition: transform 0.3s ease-in-out !important;
+    will-change: transform;
+}
+
+.shake-animation {
+    animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both !important;
+    transform: translate3d(0, 0, 0) !important;
+    backface-visibility: hidden !important;
+    perspective: 1000px !important;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
+    20%, 40%, 60%, 80% { transform: translateX(10px); }
 }

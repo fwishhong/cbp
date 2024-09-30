@@ -110,17 +110,17 @@ class Game {
 
         if (playerAttack <= 40) {
             if (enemyType < 0.6) {
-                return new Infantry(adjustedLevel, levelBonus, playerAttack);
+                return new Infantry(this.level, levelBonus, playerAttack);
             } else {
-                return new Archer(adjustedLevel, levelBonus, playerAttack);
+                return new Archer(this.level, levelBonus, playerAttack);
             }
         } else {
             if (enemyType < 0.5) {
-                return new Infantry(adjustedLevel, levelBonus, playerAttack);
+                return new Infantry(this.level, levelBonus, playerAttack);
             } else if (enemyType < 0.8) {
-                return new Archer(adjustedLevel, levelBonus, playerAttack);
+                return new Archer(this.level, levelBonus, playerAttack);
             } else {
-                return new Boss(adjustedLevel, levelBonus, playerAttack);
+                return new Boss(this.level, levelBonus, playerAttack);
             }
         }
     }
@@ -356,13 +356,9 @@ class Game {
         
         const damage = attacker.attack;
         const actualDamage = defender.takeDamage(damage);
-        
-        if (actualDamage > 0) {
-            this.addHurtAnimation(defenderPos.x, defenderPos.y);
-        }
+        const damageReduction = damage - actualDamage;
 
         let result = '';
-
         if (actualDamage === 0) {
             result = `${defender.type}<span style="color: #1E90FF;">闪避</span>了攻击！`;
         } else {
@@ -370,6 +366,9 @@ class Game {
                 result = `${attacker.type}打出了<span style="color: #FF4500;">暴击</span>，对${defender.type}造成了${actualDamage}点伤害！`;
             } else {
                 result = `${attacker.type}对${defender.type}造成了${actualDamage}点伤害！`;
+            }
+            if (damageReduction > 0) {
+                result += `<br>${defender.type}的防御力减少了${damageReduction}点伤害！`;
             }
         }
         
@@ -476,8 +475,8 @@ class Game {
         
         // 除惊雷之龙效果
         if (this.jingLeiLongActive) {
-            this.player.attack = Math.max(0, this.player.attack - 10);
-            this.player.defense = Math.max(0, this.player.defense - 20);
+            this.player.attack = Math.floor(this.player.attack / 1.2); // 移除20%攻击力加成
+            this.player.defense = Math.floor(this.player.defense / 1.3); // 移除30%防御力加成
             this.jingLeiLongActive = false;
         }
         
@@ -534,11 +533,13 @@ class Game {
         this.addEffectToCell(playerPos.x, playerPos.y, 'tianxiang-effect');
         this.addAnimationToCell(playerPos.x, playerPos.y, 'shake-animation');
 
+        const damagePercentage = 0.8; // 80% 的攻击力
+
         for (let dir of directions) {
             const x = playerPos.x + dir.dx;
             const y = playerPos.y + dir.dy;
             if (this.isValidCell(x, y) && this.grid[y][x] instanceof Character && !(this.grid[y][x] instanceof ZhaoYun)) {
-                const damage = Math.floor(this.player.attack * this.sweepAttackMultiplier);
+                const damage = Math.floor(this.player.attack * damagePercentage);
                 this.grid[y][x].takeDamage(damage);
                 enemiesHit++;
                 this.addAnimationToCell(x, y, 'flash-animation');
@@ -549,32 +550,42 @@ class Game {
         }
 
         setTimeout(() => this.removeEffectFromCell(playerPos.x, playerPos.y, 'tianxiang-effect'), 500);
-        return `赵云使用了天翔之龙，对周围的${enemiesHit}个敌人造成了${this.sweepAttackMultiplier.toFixed(1)}倍伤害！`;
+        return `赵云使用了天翔之龙，对周围的${enemiesHit}个敌人造成了${Math.floor(damagePercentage * 100)}%攻击力的伤害！`;
     }
 
     poYunLong() {
-        const healAmount = this.player.maxHealth * 0.3;
+        const healPercentage = 0.3; // 恢复30%的最大生命值
+        const healAmount = Math.floor(this.player.maxHealth * healPercentage);
         this.player.heal(healAmount);
         const playerPos = this.findPlayer();
         this.addEffectToCell(playerPos.x, playerPos.y, 'poyun-effect');
         this.addAnimationToCell(playerPos.x, playerPos.y, 'flash-animation');
         setTimeout(() => this.removeEffectFromCell(playerPos.x, playerPos.y, 'poyun-effect'), 500);
-        return `赵云使用了破云之龙，恢复了${Math.floor(healAmount)}点生命值！`;
+        return `赵云使用了破云之龙，恢复了${Math.floor(healPercentage * 100)}%的生命值（${healAmount}点）！`;
     }
 
     jingLeiLong() {
+        const attackBoostPercentage = 0.2; // 提升20%攻击力
+        const defenseBoostPercentage = 0.3; // 提升30%防御力
+
         if (this.jingLeiLongActive) {
-            this.player.attack = Math.max(0, this.player.attack - 10);
-            this.player.defense = Math.max(0, this.player.defense - 20);
+            this.player.attack = Math.floor(this.player.attack / (1 + attackBoostPercentage));
+            this.player.defense = Math.floor(this.player.defense / (1 + defenseBoostPercentage));
         }
-        this.player.attack += 10;
-        this.player.defense += 20;
+
+        const attackBoost = Math.floor(this.player.attack * attackBoostPercentage);
+        const defenseBoost = Math.floor(this.player.defense * defenseBoostPercentage);
+
+        this.player.attack += attackBoost;
+        this.player.defense += defenseBoost;
         this.jingLeiLongActive = true;
+
         const playerPos = this.findPlayer();
         this.addEffectToCell(playerPos.x, playerPos.y, 'jinglei-effect');
         this.addAnimationToCell(playerPos.x, playerPos.y, 'shake-animation');
         setTimeout(() => this.removeEffectFromCell(playerPos.x, playerPos.y, 'jinglei-effect'), 500);
-        return `赵云使用了惊雷之龙，攻击力提升了10点，防御力提升了20点！`;
+
+        return `赵云使用了惊雷之龙，攻击力提升了${Math.floor(attackBoostPercentage * 100)}%（${attackBoost}点），防御力提升了${Math.floor(defenseBoostPercentage * 100)}%（${defenseBoost}点）！`;
     }
 
     updateSkillButtons() {

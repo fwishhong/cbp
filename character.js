@@ -18,24 +18,18 @@ class Character {
             return 0; // 闪避成功，不受伤害
         }
 
-        if (this.defense > 0) {
-            if (damage > this.defense) {
-                const remainingDamage = damage - this.defense;
-                this.defense = 0;
-                this.health = Math.max(0, this.health - remainingDamage);
-            } else {
-                this.defense -= damage;
-            }
-        } else {
-            this.health = Math.max(0, this.health - damage);
-        }
-        return damage;
+        // 计算防御力带来的减伤百分比
+        const damageReduction = this.defense / (this.defense + 100); // 这个公式可以根据需要调整
+        const reducedDamage = Math.floor(damage * (1 - damageReduction));
+
+        this.health = Math.max(0, this.health - reducedDamage);
+        return reducedDamage;
     }
 
     attack(target) {
         let damage = this.attack;
         if (Math.random() < this.critRate) {
-            damage *= 2; // 暴击造成双��伤害
+            damage *= 2; // 暴击造成双伤害
         }
         return target.takeDamage(damage);
     }
@@ -92,9 +86,18 @@ class ZhaoYun extends Character {
 class Infantry extends Character {
     constructor(level, levelBonus = 0, playerAttack = 20) {
         const adjustment = Character.calculateEnemyAdjustment(playerAttack);
-        const health = Math.floor((Character.getRandomInt(40, 60) + level * 5 + levelBonus * 2) * adjustment);
-        const attack = Math.floor((Character.getRandomInt(10, 15) + level + levelBonus) * adjustment);
-        const defense = Math.floor((30 + Character.getRandomInt(5, 8) + Math.floor(level / 2) + Math.floor(levelBonus / 2)) * adjustment);
+        let health = Math.floor((Character.getRandomInt(40, 60) + level * 5 + levelBonus * 2) * adjustment);
+        let attack = Math.floor((Character.getRandomInt(10, 15) + level + levelBonus) * adjustment);
+        let defense = Math.floor((30 + Character.getRandomInt(5, 8) + Math.floor(level / 2) + Math.floor(levelBonus / 2)) * adjustment);
+        
+        // 前三关特殊处理
+        if (level <= 3) {
+            health = Math.floor(health * 0.7);
+            attack = Math.floor(attack * 0.7);
+            defense = Math.floor(defense * 0.7);
+            defense = Math.min(defense, 10);
+        }
+        
         super('步兵', health, attack, defense, 'images/infantry.png');
     }
 }
@@ -102,9 +105,18 @@ class Infantry extends Character {
 class Archer extends Character {
     constructor(level, levelBonus = 0, playerAttack = 20) {
         const adjustment = Character.calculateEnemyAdjustment(playerAttack);
-        const health = Math.floor((Character.getRandomInt(30, 50) + level * 4 + levelBonus * 2) * adjustment);
-        const attack = Math.floor((Character.getRandomInt(12, 18) + level + levelBonus) * adjustment);
-        const defense = Math.floor((25 + Character.getRandomInt(3, 6) + Math.floor(level / 2) + Math.floor(levelBonus / 2)) * adjustment);
+        let health = Math.floor((Character.getRandomInt(30, 50) + level * 4 + levelBonus * 2) * adjustment);
+        let attack = Math.floor((Character.getRandomInt(12, 18) + level + levelBonus) * adjustment);
+        let defense = Math.floor((25 + Character.getRandomInt(3, 6) + Math.floor(level / 2) + Math.floor(levelBonus / 2)) * adjustment);
+        
+        // 前三关特殊处理
+        if (level <= 3) {
+            health = Math.floor(health * 0.7);
+            attack = Math.floor(attack * 0.7);
+            defense = Math.floor(defense * 0.7);
+            defense = Math.min(defense, 10);
+        }
+        
         super('弓箭手', health, attack, defense, 'images/archer.png');
     }
 }
@@ -112,9 +124,18 @@ class Archer extends Character {
 class Boss extends Character {
     constructor(level, levelBonus = 0, playerAttack = 20) {
         const adjustment = Character.calculateEnemyAdjustment(playerAttack);
-        const health = Math.floor((Character.getRandomInt(80, 100) + level * 10 + levelBonus * 5) * adjustment);
-        const attack = Math.floor((Character.getRandomInt(18, 25) + level * 2 + levelBonus * 2) * adjustment);
-        const defense = Math.floor((40 + Character.getRandomInt(10, 15) + level + levelBonus) * adjustment);
+        let health = Math.floor((Character.getRandomInt(80, 100) + level * 10 + levelBonus * 5) * adjustment);
+        let attack = Math.floor((Character.getRandomInt(18, 25) + level * 2 + levelBonus * 2) * adjustment);
+        let defense = Math.floor((40 + Character.getRandomInt(10, 15) + level + levelBonus) * adjustment);
+        
+        // 前三关特殊处理（虽然前三关不会出现Boss，但为了保持一致性）
+        if (level <= 3) {
+            health = Math.floor(health * 0.7);
+            attack = Math.floor(attack * 0.7);
+            defense = Math.floor(defense * 0.7);
+            defense = Math.min(defense, 15); // Boss的防御力上限稍高一些
+        }
+        
         super('武将', health, attack, defense, 'images/boss.png');
     }
 }

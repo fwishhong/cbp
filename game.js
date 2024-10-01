@@ -266,12 +266,6 @@ class Game {
                         cell.style.backgroundColor = 'var(--item-bg-color)';
                     } else if (content instanceof ZhaoYun) {
                         cell.style.backgroundColor = 'var(--zhaoyun-bg-color)';
-                        // 添加升级进度条
-                        const expBar = document.createElement('div');
-                        expBar.classList.add('exp-bar');
-                        const expPercentage = (this.player.exp / (this.player.level * 100)) * 100;
-                        expBar.innerHTML = `<div class="exp-progress" style="width: ${expPercentage}%"></div>`;
-                        cell.appendChild(expBar);
                     }
                     cell.appendChild(img);
 
@@ -315,7 +309,9 @@ class Game {
     }
 
     updateInfoPanel() {
-        // 移除升级进度条的更新逻辑
+        const expBar = document.getElementById('exp-progress');
+        const expPercentage = (this.player.exp / (this.player.level * 100)) * 100;
+        expBar.style.width = `${expPercentage}%`;
     }
 
     handleCellClick(x, y) {
@@ -374,7 +370,7 @@ class Game {
                 result = `${attacker.type}对${defender.type}造成了${actualDamage}点伤害！`;
             }
             if (damageReduction > 0) {
-                result += `<br>${defender.type}的防御力减少了${damageReduction}点伤害！`;
+                result += `<br>${defender.type}的防御力减少${damageReduction}点伤害！`;
             }
         }
         
@@ -456,8 +452,8 @@ class Game {
             10: "后面赶来的是马延、张顗，前面阻挡的是焦触、张南，都是袁绍手下降将。赵云力战四将，曹军一拥齐上。赵云拔出青釭剑乱砍，手起处血如涌泉，杀退众军将后直透重围。",
             11: "赵云怀抱阿斗直透重围，砍倒大旗两面，夺槊三条，前后枪刺剑砍，杀死曹营军将五十多名。",
             12: "赵云挺枪便刺，钟缙当先挥大斧来迎。两马相交战了不到三个回合，被赵云一枪刺落马下",
-            13: "背后钟绅持戟赶来，马尾相衔���那支戟眼看就要刺到赵云后心，赵云急忙拨转马头，恰好两胸相迎。赵云左手持枪隔过画戟，右手拔出青釭宝剑砍去，连盔带头砍去一半，钟绅落马而死",
-            14: "赵云摆脱追击，纵马奔长坂桥而退，只听得后面喊杀声大震，原来是文聘领军赶来。赵云来到桥边，早已是人困马乏，看到张飞在桥上立马挺矛，便大呼道：'翼德前来助我！'张飞说：'子龙速行，后面追兵自有我来抵挡。'"
+            13: "背后钟绅持戟赶来，马尾相那支戟眼看就要刺到赵云后心，赵云急忙拨转马头，恰好两胸相迎。赵云左手持枪隔过画戟，右手拔出青釭宝剑砍去，连盔带头砍去一半，钟绅落马而死",
+            14: "赵云摆脱追击，马奔长坂桥而退，只听得后面喊杀声大震，原来是文聘领军赶来。赵云来到桥边，早已是人困马乏，看到张飞在桥上立马挺矛，便大呼道：'翼德前来助我！'张飞说：'子龙速行，后面追兵自有我来抵挡。'"
         };
 
         introText = introTexts[this.level] || "";
@@ -591,7 +587,7 @@ class Game {
         this.addAnimationToCell(playerPos.x, playerPos.y, 'shake-animation');
         setTimeout(() => this.removeEffectFromCell(playerPos.x, playerPos.y, 'jinglei-effect'), 500);
 
-        return `赵云使用了惊雷之龙，攻击力提升了${Math.floor(attackBoostPercentage * 100)}%（${attackBoost}点），防御力提升了${Math.floor(defenseBoostPercentage * 100)}%（${defenseBoost}点）！`;
+        return `赵云使��了惊雷之龙，攻击力提升了${Math.floor(attackBoostPercentage * 100)}%（${attackBoost}点），防御力提升${Math.floor(defenseBoostPercentage * 100)}%（${defenseBoost}点）！`;
     }
 
     updateSkillButtons() {

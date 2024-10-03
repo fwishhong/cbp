@@ -587,7 +587,7 @@ class Game {
         this.addAnimationToCell(playerPos.x, playerPos.y, 'shake-animation');
         setTimeout(() => this.removeEffectFromCell(playerPos.x, playerPos.y, 'jinglei-effect'), 500);
 
-        return `赵云使��了惊雷之龙，攻击力提升了${Math.floor(attackBoostPercentage * 100)}%（${attackBoost}点），防御力提升${Math.floor(defenseBoostPercentage * 100)}%（${defenseBoost}点）！`;
+        return `赵云使了惊雷之龙，攻击力提升了${Math.floor(attackBoostPercentage * 100)}%（${attackBoost}点），防御力提升${Math.floor(defenseBoostPercentage * 100)}%（${defenseBoost}点）！`;
     }
 
     updateSkillButtons() {
@@ -597,7 +597,7 @@ class Game {
 
         attackBtn.textContent = '天翔之龙';
         healBtn.textContent = '破云之龙';
-        boostBtn.textContent = '惊雷龙';
+        boostBtn.textContent = '惊雷之龙';
 
         attackBtn.disabled = this.skillsUsed.attack;
         healBtn.disabled = this.skillsUsed.heal;
@@ -721,6 +721,7 @@ class Game {
     startGameActual() {
         document.getElementById('start-screen').classList.add('hidden');
         document.getElementById('game-screen').classList.remove('hidden');
+        document.getElementById('game-credits').style.display = 'none'; // 隐藏版权信息
         this.initLevel();
         this.renderGrid();
         this.updateInfoPanel();
